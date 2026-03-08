@@ -1,0 +1,16 @@
+.page {
+  max-width: 1200px;
+}
+
+.heading {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--colour-text);
+  margin-bottom: var(--spacing-lg);
+}
+
+.placeholder {
+  color: var(--colour-text-muted);
+  font-size: var(--font-size-sm);
+  line-height: 1.7;
+}
