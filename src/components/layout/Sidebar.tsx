@@ -2,7 +2,8 @@ import { NavLink } from 'react-router-dom';
 import styles from './Sidebar.module.css';
 
 const navItems = [
-  { to: '/', label: 'Dashboard', icon: '📊' },
+  { to: '/', label: 'Heatmap', icon: '🔥' },
+  { to: '/comparison', label: 'Forecast vs Actual', icon: '📊' },
   { to: '/hours', label: 'Hours Log', icon: '🕐' },
   { to: '/reports', label: 'Reports', icon: '📋' },
 ];

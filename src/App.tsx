@@ -3,6 +3,7 @@ import Shell from '@/components/layout/Shell';
 import Dashboard from '@/pages/Dashboard';
 import HoursLog from '@/pages/HoursLog';
 import Reports from '@/pages/Reports';
+import Comparison from '@/pages/Comparison';
 import NotFound from '@/pages/NotFound';
 
 function App() {
@@ -12,6 +13,7 @@ function App() {
         <Route path="/" element={<Dashboard />} />
         <Route path="/hours" element={<HoursLog />} />
         <Route path="/reports" element={<Reports />} />
+        <Route path="/comparison" element={<Comparison />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Shell>

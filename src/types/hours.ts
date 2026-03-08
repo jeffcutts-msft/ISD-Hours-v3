@@ -31,3 +31,55 @@ export interface HoursSummary {
   leaveHours: number;
   periodLabel: string;
 }
+
+// ── CSV dataset types ──────────────────────────────────────────────────────
+
+/** Work type discriminator in the CSV. */
+export type WorkType = 'Actual' | 'Forecast';
+
+/** A single parsed row from the CSV dataset. */
+export interface CsvRow {
+  date: string; // YYYY-MM-DD
+  weekStart: string; // YYYY-MM-DD (Monday of that week)
+  workType: WorkType;
+  personId: string;
+  personName: string;
+  role: string; // Consultant | Architect | Project Manager
+  level: string;
+  practice: string;
+  homeLocation: string;
+  fte: number;
+  projectCode: string;
+  projectName: string;
+  hours: number;
+}
+
+/** Aggregated hours for one person in one week, for one WorkType. */
+export interface PersonWeekData {
+  personId: string;
+  personName: string;
+  role: string;
+  weekStart: string; // YYYY-MM-DD
+  workType: WorkType;
+  totalHours: number;
+}
+
+/**
+ * All unique weeks and people extracted from the dataset,
+ * plus a quick-lookup map: `personId -> weekStart -> WorkType -> totalHours`.
+ */
+export interface DashboardData {
+  weeks: string[]; // sorted YYYY-MM-DD week-start dates
+  people: PersonMeta[]; // sorted by name
+  /** lookup[personId][weekStart][workType] = totalHours */
+  lookup: Record<string, Record<string, Record<WorkType, number>>>;
+}
+
+/** Lightweight person metadata used in dashboard tables. */
+export interface PersonMeta {
+  personId: string;
+  personName: string;
+  role: string;
+  level: string;
+  practice: string;
+}
