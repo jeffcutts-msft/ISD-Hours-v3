@@ -12,9 +12,58 @@ function fmtHours(hours: number): string {
   return hours.toLocaleString();
 }
 
+type SortDir = 'asc' | 'desc';
+type MonthSortKey = 'label' | 'totalHours' | 'weekCount' | 'peopleCount';
+type WeekSortKey = 'weekStart' | 'totalHours' | 'dayCount' | 'peopleCount';
+type DaySortKey = 'date' | 'totalHours' | 'peopleCount';
+type PeopleSortKey = 'personName' | 'role' | 'totalHours' | string;
+
+function toggleSort<K extends string>(current: { key: K; dir: SortDir }, key: K): { key: K; dir: SortDir } {
+  if (current.key === key) {
+    return {
+      key,
+      dir: current.dir === 'asc' ? 'desc' : 'asc',
+    };
+  }
+
+  return { key, dir: 'asc' };
+}
+
+function getAriaSort(isActive: boolean, dir: SortDir): 'none' | 'ascending' | 'descending' {
+  if (!isActive) {
+    return 'none';
+  }
+
+  return dir === 'asc' ? 'ascending' : 'descending';
+}
+
+function getSortIndicator(isActive: boolean, dir: SortDir): string {
+  if (!isActive) {
+    return '↕';
+  }
+
+  return dir === 'asc' ? '↑' : '↓';
+}
+
 function ActualsDrilldown() {
   const [selectedMonthId, setSelectedMonthId] = useState<string | null>(null);
   const [selectedWeekStart, setSelectedWeekStart] = useState<string | null>(null);
+  const [monthSort, setMonthSort] = useState<{ key: MonthSortKey; dir: SortDir }>({
+    key: 'label',
+    dir: 'asc',
+  });
+  const [weekSort, setWeekSort] = useState<{ key: WeekSortKey; dir: SortDir }>({
+    key: 'weekStart',
+    dir: 'asc',
+  });
+  const [daySort, setDaySort] = useState<{ key: DaySortKey; dir: SortDir }>({
+    key: 'date',
+    dir: 'asc',
+  });
+  const [peopleSort, setPeopleSort] = useState<{ key: PeopleSortKey; dir: SortDir }>({
+    key: 'personName',
+    dir: 'asc',
+  });
 
   const {
     isLoading,
@@ -54,6 +103,65 @@ function ActualsDrilldown() {
     return selectedMonth ? selectedMonth.label : 'No month selected';
   }, [monthSummaries, selectedMonthId]);
 
+  const sortedMonthSummaries = useMemo(() => {
+    return [...monthSummaries].sort((a, b) => {
+      if (monthSort.key === 'label') {
+        const value = a.label.localeCompare(b.label);
+        return monthSort.dir === 'asc' ? value : -value;
+      }
+
+      const value = a[monthSort.key] - b[monthSort.key];
+      return monthSort.dir === 'asc' ? value : -value;
+    });
+  }, [monthSort, monthSummaries]);
+
+  const sortedWeekSummaries = useMemo(() => {
+    return [...weekSummaries].sort((a, b) => {
+      if (weekSort.key === 'weekStart') {
+        const value = a.weekStart.localeCompare(b.weekStart);
+        return weekSort.dir === 'asc' ? value : -value;
+      }
+
+      const value = a[weekSort.key] - b[weekSort.key];
+      return weekSort.dir === 'asc' ? value : -value;
+    });
+  }, [weekSort, weekSummaries]);
+
+  const sortedDaySummaries = useMemo(() => {
+    return [...daySummaries].sort((a, b) => {
+      if (daySort.key === 'date') {
+        const value = a.date.localeCompare(b.date);
+        return daySort.dir === 'asc' ? value : -value;
+      }
+
+      const value = a[daySort.key] - b[daySort.key];
+      return daySort.dir === 'asc' ? value : -value;
+    });
+  }, [daySort, daySummaries]);
+
+  const sortedPersonWeekRows = useMemo(() => {
+    return [...personWeekRows].sort((a, b) => {
+      if (peopleSort.key === 'personName') {
+        const value = a.personName.localeCompare(b.personName);
+        return peopleSort.dir === 'asc' ? value : -value;
+      }
+
+      if (peopleSort.key === 'role') {
+        const value = a.role.localeCompare(b.role);
+        return peopleSort.dir === 'asc' ? value : -value;
+      }
+
+      if (peopleSort.key === 'totalHours') {
+        const value = a.totalHours - b.totalHours;
+        return peopleSort.dir === 'asc' ? value : -value;
+      }
+
+      const dateKey = peopleSort.key;
+      const value = (a.dailyHours[dateKey] ?? 0) - (b.dailyHours[dateKey] ?? 0);
+      return peopleSort.dir === 'asc' ? value : -value;
+    });
+  }, [peopleSort, personWeekRows]);
+
   if (isLoading) {
     return (
       <div className={styles.page}>
@@ -91,15 +199,48 @@ function ActualsDrilldown() {
           <table className={styles.table}>
             <thead>
               <tr>
-                <th>Month</th>
-                <th>Total Hours</th>
-                <th>Weeks</th>
-                <th>People</th>
+                <th aria-sort={getAriaSort(monthSort.key === 'label', monthSort.dir)}>
+                  <button
+                    type="button"
+                    className={styles.sortButton}
+                    onClick={() => setMonthSort((prev) => toggleSort(prev, 'label'))}
+                  >
+                    Month <span className={styles.sortIndicator}>{getSortIndicator(monthSort.key === 'label', monthSort.dir)}</span>
+                  </button>
+                </th>
+                <th aria-sort={getAriaSort(monthSort.key === 'totalHours', monthSort.dir)}>
+                  <button
+                    type="button"
+                    className={styles.sortButton}
+                    onClick={() => setMonthSort((prev) => toggleSort(prev, 'totalHours'))}
+                  >
+                    Total Hours{' '}
+                    <span className={styles.sortIndicator}>{getSortIndicator(monthSort.key === 'totalHours', monthSort.dir)}</span>
+                  </button>
+                </th>
+                <th aria-sort={getAriaSort(monthSort.key === 'weekCount', monthSort.dir)}>
+                  <button
+                    type="button"
+                    className={styles.sortButton}
+                    onClick={() => setMonthSort((prev) => toggleSort(prev, 'weekCount'))}
+                  >
+                    Weeks <span className={styles.sortIndicator}>{getSortIndicator(monthSort.key === 'weekCount', monthSort.dir)}</span>
+                  </button>
+                </th>
+                <th aria-sort={getAriaSort(monthSort.key === 'peopleCount', monthSort.dir)}>
+                  <button
+                    type="button"
+                    className={styles.sortButton}
+                    onClick={() => setMonthSort((prev) => toggleSort(prev, 'peopleCount'))}
+                  >
+                    People <span className={styles.sortIndicator}>{getSortIndicator(monthSort.key === 'peopleCount', monthSort.dir)}</span>
+                  </button>
+                </th>
                 <th>Drilldown</th>
               </tr>
             </thead>
             <tbody>
-              {monthSummaries.map((month) => {
+              {sortedMonthSummaries.map((month) => {
                 const isSelected = month.id === selectedMonthId;
                 return (
                   <tr key={month.id} className={isSelected ? styles.selectedRow : ''}>
@@ -130,15 +271,49 @@ function ActualsDrilldown() {
           <table className={styles.table}>
             <thead>
               <tr>
-                <th>Week Start</th>
-                <th>Total Hours</th>
-                <th>Days</th>
-                <th>People</th>
+                <th aria-sort={getAriaSort(weekSort.key === 'weekStart', weekSort.dir)}>
+                  <button
+                    type="button"
+                    className={styles.sortButton}
+                    onClick={() => setWeekSort((prev) => toggleSort(prev, 'weekStart'))}
+                  >
+                    Week Start{' '}
+                    <span className={styles.sortIndicator}>{getSortIndicator(weekSort.key === 'weekStart', weekSort.dir)}</span>
+                  </button>
+                </th>
+                <th aria-sort={getAriaSort(weekSort.key === 'totalHours', weekSort.dir)}>
+                  <button
+                    type="button"
+                    className={styles.sortButton}
+                    onClick={() => setWeekSort((prev) => toggleSort(prev, 'totalHours'))}
+                  >
+                    Total Hours{' '}
+                    <span className={styles.sortIndicator}>{getSortIndicator(weekSort.key === 'totalHours', weekSort.dir)}</span>
+                  </button>
+                </th>
+                <th aria-sort={getAriaSort(weekSort.key === 'dayCount', weekSort.dir)}>
+                  <button
+                    type="button"
+                    className={styles.sortButton}
+                    onClick={() => setWeekSort((prev) => toggleSort(prev, 'dayCount'))}
+                  >
+                    Days <span className={styles.sortIndicator}>{getSortIndicator(weekSort.key === 'dayCount', weekSort.dir)}</span>
+                  </button>
+                </th>
+                <th aria-sort={getAriaSort(weekSort.key === 'peopleCount', weekSort.dir)}>
+                  <button
+                    type="button"
+                    className={styles.sortButton}
+                    onClick={() => setWeekSort((prev) => toggleSort(prev, 'peopleCount'))}
+                  >
+                    People <span className={styles.sortIndicator}>{getSortIndicator(weekSort.key === 'peopleCount', weekSort.dir)}</span>
+                  </button>
+                </th>
                 <th>Drilldown</th>
               </tr>
             </thead>
             <tbody>
-              {weekSummaries.map((week) => {
+              {sortedWeekSummaries.map((week) => {
                 const isSelected = week.weekStart === selectedWeekStart;
                 return (
                   <tr key={week.weekStart} className={isSelected ? styles.selectedRow : ''}>
@@ -169,13 +344,38 @@ function ActualsDrilldown() {
           <table className={styles.table}>
             <thead>
               <tr>
-                <th>Date</th>
-                <th>Total Hours</th>
-                <th>People</th>
+                <th aria-sort={getAriaSort(daySort.key === 'date', daySort.dir)}>
+                  <button
+                    type="button"
+                    className={styles.sortButton}
+                    onClick={() => setDaySort((prev) => toggleSort(prev, 'date'))}
+                  >
+                    Date <span className={styles.sortIndicator}>{getSortIndicator(daySort.key === 'date', daySort.dir)}</span>
+                  </button>
+                </th>
+                <th aria-sort={getAriaSort(daySort.key === 'totalHours', daySort.dir)}>
+                  <button
+                    type="button"
+                    className={styles.sortButton}
+                    onClick={() => setDaySort((prev) => toggleSort(prev, 'totalHours'))}
+                  >
+                    Total Hours{' '}
+                    <span className={styles.sortIndicator}>{getSortIndicator(daySort.key === 'totalHours', daySort.dir)}</span>
+                  </button>
+                </th>
+                <th aria-sort={getAriaSort(daySort.key === 'peopleCount', daySort.dir)}>
+                  <button
+                    type="button"
+                    className={styles.sortButton}
+                    onClick={() => setDaySort((prev) => toggleSort(prev, 'peopleCount'))}
+                  >
+                    People <span className={styles.sortIndicator}>{getSortIndicator(daySort.key === 'peopleCount', daySort.dir)}</span>
+                  </button>
+                </th>
               </tr>
             </thead>
             <tbody>
-              {daySummaries.map((day) => (
+              {sortedDaySummaries.map((day) => (
                 <tr key={day.date}>
                   <td>{formatIsoDate(day.date)}</td>
                   <td>{fmtHours(day.totalHours)}</td>
@@ -198,16 +398,51 @@ function ActualsDrilldown() {
           <table className={styles.table}>
             <thead>
               <tr>
-                <th>Person</th>
-                <th>Role</th>
+                <th aria-sort={getAriaSort(peopleSort.key === 'personName', peopleSort.dir)}>
+                  <button
+                    type="button"
+                    className={styles.sortButton}
+                    onClick={() => setPeopleSort((prev) => toggleSort(prev, 'personName'))}
+                  >
+                    Person{' '}
+                    <span className={styles.sortIndicator}>{getSortIndicator(peopleSort.key === 'personName', peopleSort.dir)}</span>
+                  </button>
+                </th>
+                <th aria-sort={getAriaSort(peopleSort.key === 'role', peopleSort.dir)}>
+                  <button
+                    type="button"
+                    className={styles.sortButton}
+                    onClick={() => setPeopleSort((prev) => toggleSort(prev, 'role'))}
+                  >
+                    Role <span className={styles.sortIndicator}>{getSortIndicator(peopleSort.key === 'role', peopleSort.dir)}</span>
+                  </button>
+                </th>
                 {weekDates.map((date) => (
-                  <th key={date}>{formatIsoDate(date)}</th>
+                  <th key={date} aria-sort={getAriaSort(peopleSort.key === date, peopleSort.dir)}>
+                    <button
+                      type="button"
+                      className={styles.sortButton}
+                      onClick={() => setPeopleSort((prev) => toggleSort(prev, date))}
+                    >
+                      {formatIsoDate(date)}{' '}
+                      <span className={styles.sortIndicator}>{getSortIndicator(peopleSort.key === date, peopleSort.dir)}</span>
+                    </button>
+                  </th>
                 ))}
-                <th>Week Total</th>
+                <th aria-sort={getAriaSort(peopleSort.key === 'totalHours', peopleSort.dir)}>
+                  <button
+                    type="button"
+                    className={styles.sortButton}
+                    onClick={() => setPeopleSort((prev) => toggleSort(prev, 'totalHours'))}
+                  >
+                    Week Total{' '}
+                    <span className={styles.sortIndicator}>{getSortIndicator(peopleSort.key === 'totalHours', peopleSort.dir)}</span>
+                  </button>
+                </th>
               </tr>
             </thead>
             <tbody>
-              {personWeekRows.map((row) => {
+              {sortedPersonWeekRows.map((row) => {
                 const status = getWeekStatusClass(row.totalHours);
                 return (
                   <tr key={row.personId}>

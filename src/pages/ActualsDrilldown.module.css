@@ -64,6 +64,26 @@
   background: var(--colour-bg);
 }
 
+.sortButton {
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  width: 100%;
+  text-align: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: inherit;
+  gap: var(--spacing-xs);
+  padding: 0;
+  cursor: pointer;
+}
+
+.sortIndicator {
+  color: var(--colour-text-muted);
+  font-size: var(--font-size-xs);
+}
+
 .selectedRow {
   background: var(--colour-bg);
 }

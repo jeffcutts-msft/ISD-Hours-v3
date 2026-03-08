@@ -50,6 +50,49 @@ function toMonthId(row: DataRow): string {
   return `${row.year}-${String(row.monthNum).padStart(2, '0')}`;
 }
 
+function parseIsoDate(isoDate: string): Date | null {
+  const [yearPart, monthPart, dayPart] = isoDate.split('-');
+  const year = Number(yearPart);
+  const month = Number(monthPart);
+  const day = Number(dayPart);
+
+  if (!Number.isInteger(year) || !Number.isInteger(month) || !Number.isInteger(day)) {
+    return null;
+  }
+
+  const parsed = new Date(year, month - 1, day);
+  if (
+    parsed.getFullYear() !== year ||
+    parsed.getMonth() !== month - 1 ||
+    parsed.getDate() !== day
+  ) {
+    return null;
+  }
+
+  return parsed;
+}
+
+function toIsoDate(date: Date): string {
+  const year = String(date.getFullYear());
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function getSaturdayWeekStart(isoDate: string): string {
+  const date = parseIsoDate(isoDate);
+  if (!date) {
+    return isoDate;
+  }
+
+  const dayOfWeek = date.getDay();
+  const daysSinceSaturday = (dayOfWeek + 1) % 7;
+  const weekStart = new Date(date);
+  weekStart.setDate(date.getDate() - daysSinceSaturday);
+
+  return toIsoDate(weekStart);
+}
+
 export function useActualsDrilldownData(selectedMonthId: string | null, selectedWeekStart: string | null): ActualsDrilldownData {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -111,7 +154,7 @@ export function useActualsDrilldownData(selectedMonthId: string | null, selected
         };
 
       current.totalHours += row.hours;
-      current.weeks.add(row.weekStart);
+      current.weeks.add(getSaturdayWeekStart(row.date));
       current.people.add(row.personId);
       monthMap.set(monthId, current);
     }
@@ -149,8 +192,10 @@ export function useActualsDrilldownData(selectedMonthId: string | null, selected
         continue;
       }
 
+      const weekStart = getSaturdayWeekStart(row.date);
+
       const current =
-        weekMap.get(row.weekStart) ?? {
+        weekMap.get(weekStart) ?? {
           totalHours: 0,
           people: new Set<string>(),
           dates: new Set<string>(),
@@ -159,7 +204,7 @@ export function useActualsDrilldownData(selectedMonthId: string | null, selected
       current.totalHours += row.hours;
       current.people.add(row.personId);
       current.dates.add(row.date);
-      weekMap.set(row.weekStart, current);
+      weekMap.set(weekStart, current);
     }
 
     return Array.from(weekMap.entries())
@@ -181,7 +226,7 @@ export function useActualsDrilldownData(selectedMonthId: string | null, selected
     const dayMap = new Map<string, { totalHours: number; people: Set<string> }>();
 
     for (const row of rows) {
-      if (row.weekStart !== selectedWeekStart) {
+      if (getSaturdayWeekStart(row.date) !== selectedWeekStart) {
         continue;
       }
 
@@ -219,7 +264,7 @@ export function useActualsDrilldownData(selectedMonthId: string | null, selected
     >();
 
     for (const row of rows) {
-      if (row.weekStart !== selectedWeekStart) {
+      if (getSaturdayWeekStart(row.date) !== selectedWeekStart) {
         continue;
       }
 
@@ -269,8 +314,8 @@ export function getWeekStatusClass(totalHours: number): 'high' | 'medium' | 'low
 }
 
 export function formatIsoDate(isoDate: string): string {
-  const date = new Date(isoDate);
-  if (Number.isNaN(date.getTime())) {
+  const date = parseIsoDate(isoDate);
+  if (!date) {
     return isoDate;
   }
 
