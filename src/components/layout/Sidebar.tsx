@@ -4,6 +4,8 @@ import styles from './Sidebar.module.css';
 const navItems = [
   { to: '/', label: 'Dashboard', icon: '📊' },
   { to: '/hours', label: 'Hours Log', icon: '🕐' },
+  { to: '/actuals', label: 'Actuals', icon: '📈' },
+  { to: '/actuals-vs-forecast', label: 'Actuals vs Forecast', icon: '🔍' },
   { to: '/reports', label: 'Reports', icon: '📋' },
 ];
 
