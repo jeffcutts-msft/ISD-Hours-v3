@@ -30,3 +30,8 @@ export function formatDisplayDate(isoDate: string): string {
     year: 'numeric',
   });
 }
+
+/** Rounds a number to one decimal place. */
+export function roundOne(n: number): number {
+  return Math.round(n * 10) / 10;
+}
