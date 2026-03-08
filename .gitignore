@@ -5,6 +5,13 @@ node_modules/
 dist/
 build/
 
+# TypeScript build info
+*.tsbuildinfo
+
+# Vite compiled config artifacts
+vite.config.d.ts
+vite.config.js
+
 # Environment variables
 .env
 .env.local
