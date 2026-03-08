@@ -54,49 +54,6 @@
   outline-offset: 1px;
 }
 
-/* ── Legend ──────────────────────────────────────────────────────────── */
-
-.legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--spacing-md);
-  margin-bottom: var(--spacing-md);
-  align-items: center;
-}
-
-.legendTitle {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  color: var(--colour-text-muted);
-}
-
-.legendItem {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  font-size: var(--font-size-sm);
-  color: var(--colour-text);
-}
-
-.legendSwatch {
-  width: 16px;
-  height: 16px;
-  border-radius: var(--radius-sm);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-}
-
-.swatchGreen {
-  background-color: #c6efce;
-}
-
-.swatchOrange {
-  background-color: #ffeb9c;
-}
-
-.swatchRed {
-  background-color: #ffc7ce;
-}
-
 /* ── Table wrapper ───────────────────────────────────────────────────── */
 
 .tableWrapper {
@@ -113,13 +70,13 @@
   font-size: var(--font-size-sm);
 }
 
-/* ── Header row ──────────────────────────────────────────────────────── */
+/* ── Header ──────────────────────────────────────────────────────────── */
 
 .table thead th {
   background: #1b2a3b;
   color: #ffffff;
-  padding: 10px 12px;
-  text-align: center;
+  padding: 10px 14px;
+  text-align: left;
   white-space: nowrap;
   font-weight: var(--font-weight-medium);
   position: sticky;
@@ -127,23 +84,11 @@
   z-index: 3;
 }
 
-.table thead th:first-child {
-  text-align: left;
-  position: sticky;
-  left: 0;
-  z-index: 4;
-  min-width: 200px;
+.table thead th.numericHeader {
+  text-align: right;
 }
 
-.table thead th:nth-child(2) {
-  text-align: left;
-  position: sticky;
-  left: 200px;
-  z-index: 4;
-  min-width: 140px;
-}
-
-/* ── Body cells ──────────────────────────────────────────────────────── */
+/* ── Rows ────────────────────────────────────────────────────────────── */
 
 .table tbody tr:nth-child(even) td {
   background-color: #f8f9fa;
@@ -154,51 +99,29 @@
 }
 
 .table tbody td {
-  padding: 8px 12px;
+  padding: 8px 14px;
   border-bottom: 1px solid var(--colour-border);
   white-space: nowrap;
 }
 
-.nameCell {
-  position: sticky;
-  left: 0;
-  background: inherit;
-  z-index: 2;
+/* ── Numeric cells ───────────────────────────────────────────────────── */
+
+.numericCell {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.positiveVariance {
+  color: #276221;
   font-weight: var(--font-weight-medium);
 }
 
-.roleCell {
-  position: sticky;
-  left: 200px;
-  background: inherit;
-  z-index: 2;
-  color: var(--colour-text-muted);
-}
-
-/* ── Hours cells ─────────────────────────────────────────────────────── */
-
-.hoursCell {
-  text-align: center;
-  font-variant-numeric: tabular-nums;
-  min-width: 64px;
-}
-
-.table tbody td.green {
-  background-color: #c6efce;
-  color: #276221;
-}
-
-.table tbody td.orange {
-  background-color: #ffeb9c;
-  color: #7d6608;
-}
-
-.table tbody td.red {
-  background-color: #ffc7ce;
+.negativeVariance {
   color: #9c0006;
+  font-weight: var(--font-weight-medium);
 }
 
-.empty {
+.neutralVariance {
   color: var(--colour-text-muted);
 }
 
@@ -220,4 +143,44 @@
   font-size: var(--font-size-sm);
   color: var(--colour-text-muted);
   margin-bottom: var(--spacing-sm);
+}
+
+/* ── Summary bar ─────────────────────────────────────────────────────── */
+
+.summaryBar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+}
+
+.summaryCard {
+  flex: 1;
+  min-width: 160px;
+  background: var(--colour-surface);
+  border: 1px solid var(--colour-border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md) var(--spacing-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.summaryCardLabel {
+  font-size: var(--font-size-sm);
+  color: var(--colour-text-muted);
+  margin-bottom: var(--spacing-xs);
+}
+
+.summaryCardValue {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--colour-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.summaryCardValue.positive {
+  color: #276221;
+}
+
+.summaryCardValue.negative {
+  color: #9c0006;
 }
