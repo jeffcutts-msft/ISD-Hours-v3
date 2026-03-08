@@ -1,0 +1,114 @@
+.page {
+  padding: var(--spacing-lg);
+  display: grid;
+  gap: var(--spacing-lg);
+}
+
+.heading {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--colour-text);
+  margin: 0;
+}
+
+.subheading {
+  font-size: var(--font-size-sm);
+  color: var(--colour-text-muted);
+  margin: 0;
+}
+
+.status {
+  color: var(--colour-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.statusError {
+  color: var(--colour-danger);
+  font-size: var(--font-size-sm);
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--spacing-md);
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+}
+
+.table th,
+.table td {
+  border-bottom: 1px solid var(--colour-border);
+  padding: var(--spacing-sm) var(--spacing-md);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.table th:first-child,
+.table td:first-child,
+.table th:nth-child(2),
+.table td:nth-child(2) {
+  text-align: left;
+}
+
+.table thead th {
+  color: var(--colour-text-muted);
+  font-weight: var(--font-weight-medium);
+  background: var(--colour-bg);
+}
+
+.selectedRow {
+  background: var(--colour-bg);
+}
+
+.linkButton {
+  border: none;
+  background: transparent;
+  color: var(--colour-primary);
+  font: inherit;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.legend {
+  color: var(--colour-text-muted);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--spacing-sm);
+}
+
+.highLabel {
+  color: var(--colour-success);
+}
+
+.mediumLabel {
+  color: var(--colour-warning);
+}
+
+.lowLabel {
+  color: var(--colour-danger);
+}
+
+.high {
+  background: var(--colour-success);
+  color: var(--colour-surface);
+  font-weight: var(--font-weight-medium);
+}
+
+.medium {
+  background: var(--colour-warning);
+  color: var(--colour-text);
+  font-weight: var(--font-weight-medium);
+}
+
+.low {
+  background: var(--colour-danger);
+  color: var(--colour-surface);
+  font-weight: var(--font-weight-medium);
+}
