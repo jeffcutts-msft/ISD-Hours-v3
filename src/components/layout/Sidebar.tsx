@@ -7,6 +7,7 @@ const navItems = [
   { to: '/actuals-vs-forecast', label: 'Actuals vs Forecast', icon: '🔍' },
   { to: '/actuals-drilldown', label: 'Actuals Drilldown', icon: '🧭' },
   { to: '/actuals-people-by-day', label: 'People by Day', icon: '👥' },
+  { to: '/actuals-people-by-week', label: 'People by Week', icon: '🗓️' },
   { to: '/reports', label: 'Reports', icon: '📋' },
 ];
 

@@ -142,21 +142,6 @@
   font-weight: var(--font-weight-medium);
 }
 
-.dayHigh {
-  background: #e8f6ec;
-  color: #1f5e2c;
-}
-
-.dayMedium {
-  background: #fff4df;
-  color: #7a4a00;
-}
-
-.dayLow {
-  background: #fdecec;
-  color: #7a1f1f;
-}
-
 @media (max-width: 860px) {
   .navRow {
     grid-template-columns: 1fr;

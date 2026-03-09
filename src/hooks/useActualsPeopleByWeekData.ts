@@ -2,22 +2,23 @@ import { useEffect, useMemo, useState } from 'react';
 import { getDatasetRows } from '@/services/csvService';
 import type { DataRow } from '@/types';
 import { roundOne } from '@/utils';
+import { getWeekStatusClass } from '@/hooks/useActualsPeopleByDayData';
 
-export interface PersonWeekRow {
+export interface PersonWindowRow {
   personId: string;
   personName: string;
   role: string;
-  dailyHours: Record<string, number>;
+  weeklyHours: Record<string, number>;
   totalHours: number;
 }
 
-export interface ActualsPeopleByDayData {
+export interface ActualsPeopleByWeekData {
   isLoading: boolean;
   error: string | null;
   weekStarts: string[];
   selectedWeekStart: string | null;
-  weekDates: string[];
-  personWeekRows: PersonWeekRow[];
+  visibleWeekStarts: string[];
+  personWindowRows: PersonWindowRow[];
 }
 
 function parseIsoDate(isoDate: string): Date | null {
@@ -63,32 +64,33 @@ function getSaturdayWeekStart(isoDate: string): string {
   return toIsoDate(weekStart);
 }
 
-export function getWeekStatusClass(totalHours: number): 'high' | 'medium' | 'low' {
-  if (totalHours > 36) {
-    return 'high';
-  }
-
-  if (totalHours >= 23) {
-    return 'medium';
-  }
-
-  return 'low';
-}
-
-export function formatIsoDate(isoDate: string): string {
+export function formatWeekLabel(isoDate: string): string {
   const date = parseIsoDate(isoDate);
   if (!date) {
     return isoDate;
   }
 
   return date.toLocaleDateString(undefined, {
-    weekday: 'short',
     month: 'short',
     day: 'numeric',
   });
 }
 
-export function useActualsPeopleByDayData(targetWeekStart: string | null): ActualsPeopleByDayData {
+export function getWindowTotalStatusClass(
+  totalHours: number,
+  weekCount: number,
+): 'high' | 'medium' | 'low' {
+  if (weekCount <= 0) {
+    return getWeekStatusClass(0);
+  }
+
+  const averagePerWeek = totalHours / weekCount;
+  return getWeekStatusClass(averagePerWeek);
+}
+
+export function useActualsPeopleByWeekData(
+  targetWeekStart: string | null,
+): ActualsPeopleByWeekData {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [rows, setRows] = useState<DataRow[]>([]);
@@ -108,7 +110,7 @@ export function useActualsPeopleByDayData(targetWeekStart: string | null): Actua
       .catch((err: unknown) => {
         if (!cancelled) {
           setError(err instanceof Error ? err.message : 'Failed to load data.');
-          console.error('[useActualsPeopleByDayData]', err);
+          console.error('[useActualsPeopleByWeekData]', err);
         }
       })
       .finally(() => {
@@ -143,29 +145,25 @@ export function useActualsPeopleByDayData(targetWeekStart: string | null): Actua
     return weekStarts[0];
   }, [targetWeekStart, weekStarts]);
 
-  const daySet = useMemo(() => {
-    if (!selectedWeekStart) {
-      return new Set<string>();
-    }
-
-    const set = new Set<string>();
-    for (const row of rows) {
-      if (getSaturdayWeekStart(row.date) === selectedWeekStart) {
-        set.add(row.date);
-      }
-    }
-
-    return set;
-  }, [rows, selectedWeekStart]);
-
-  const weekDates = useMemo<string[]>(() => {
-    return Array.from(daySet).sort((a, b) => a.localeCompare(b));
-  }, [daySet]);
-
-  const personWeekRows = useMemo<PersonWeekRow[]>(() => {
+  const visibleWeekStarts = useMemo<string[]>(() => {
     if (!selectedWeekStart) {
       return [];
     }
+
+    const selectedIndex = weekStarts.findIndex((weekStart) => weekStart === selectedWeekStart);
+    if (selectedIndex < 0) {
+      return [];
+    }
+
+    return weekStarts.slice(selectedIndex, selectedIndex + 4);
+  }, [selectedWeekStart, weekStarts]);
+
+  const personWindowRows = useMemo<PersonWindowRow[]>(() => {
+    if (visibleWeekStarts.length === 0) {
+      return [];
+    }
+
+    const visibleWeekSet = new Set(visibleWeekStarts);
 
     const personMap = new Map<
       string,
@@ -173,13 +171,14 @@ export function useActualsPeopleByDayData(targetWeekStart: string | null): Actua
         personId: string;
         personName: string;
         role: string;
-        dailyHours: Record<string, number>;
+        weeklyHours: Record<string, number>;
         totalHours: number;
       }
     >();
 
     for (const row of rows) {
-      if (getSaturdayWeekStart(row.date) !== selectedWeekStart) {
+      const weekStart = getSaturdayWeekStart(row.date);
+      if (!visibleWeekSet.has(weekStart)) {
         continue;
       }
 
@@ -187,24 +186,24 @@ export function useActualsPeopleByDayData(targetWeekStart: string | null): Actua
         personId: row.personId,
         personName: row.personName,
         role: row.role,
-        dailyHours: {},
+        weeklyHours: {},
         totalHours: 0,
       };
 
-      current.dailyHours[row.date] = roundOne((current.dailyHours[row.date] ?? 0) + row.hours);
+      current.weeklyHours[weekStart] = roundOne((current.weeklyHours[weekStart] ?? 0) + row.hours);
       current.totalHours = roundOne(current.totalHours + row.hours);
       personMap.set(row.personId, current);
     }
 
     return Array.from(personMap.values()).sort((a, b) => a.personName.localeCompare(b.personName));
-  }, [rows, selectedWeekStart]);
+  }, [rows, visibleWeekStarts]);
 
   return {
     isLoading,
     error,
     weekStarts,
     selectedWeekStart,
-    weekDates,
-    personWeekRows,
+    visibleWeekStarts,
+    personWindowRows,
   };
 }

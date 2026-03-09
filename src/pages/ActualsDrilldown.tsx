@@ -398,6 +398,22 @@ function ActualsDrilldown() {
           Open People by Day
         </Link>
       </Card>
+
+      <Card title="5) People by Week">
+        <p className={styles.legend}>
+          View a rolling 4-week window with one-week forward/back navigation.
+        </p>
+        <Link
+          to={
+            selectedWeekStart
+              ? `/actuals-people-by-week?weekStart=${selectedWeekStart}`
+              : '/actuals-people-by-week'
+          }
+          className={styles.linkButton}
+        >
+          Open People by Week
+        </Link>
+      </Card>
     </div>
   );
 }

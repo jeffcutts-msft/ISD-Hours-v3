@@ -62,6 +62,11 @@ src/
 - Use semantic HTML (`<main>`, `<nav>`, `<section>`, `<article>`, `<button>`, etc.).
 - Ensure colour contrast meets WCAG AA (4.5:1 for normal text).
 
+### Page-Specific Rules
+- **People by Day weekly totals** must always be colour-coded with no unstyled gap values.
+- Use these thresholds consistently in code and legend copy: `>36 = high (green)`, `23-36 = medium (orange)`, `<23 = low (red)`.
+- If threshold logic changes, update both the helper function and the on-page legend text in the same change.
+
 ### Testing
 - Write a test file alongside each component: `ComponentName.test.tsx`.
 - Test behaviour, not implementation details.
@@ -80,3 +85,7 @@ docs: add API service documentation
 - Keep PRs focused on a single feature or fix.
 - Include a clear description of **what** changed and **why**.
 - Ensure all tests pass and linting is clean before requesting review.
+
+## Local Workflow
+- After any code change, always start (or restart) the local web server so the user can immediately review the update in the browser.
+- On this project, use `npm.cmd run dev` in PowerShell environments where `npm.ps1` may be blocked by execution policy.

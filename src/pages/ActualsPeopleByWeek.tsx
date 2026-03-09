@@ -1,41 +1,19 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Card from '@/components/ui/Card';
+import { getWeekStatusClass } from '@/hooks/useActualsPeopleByDayData';
 import {
-  useActualsPeopleByDayData,
-  getWeekStatusClass,
-  formatIsoDate,
-} from '@/hooks/useActualsPeopleByDayData';
-import styles from './ActualsPeopleByDay.module.css';
+  useActualsPeopleByWeekData,
+  formatWeekLabel,
+  getWindowTotalStatusClass,
+} from '@/hooks/useActualsPeopleByWeekData';
+import styles from './ActualsPeopleByWeek.module.css';
 
 type SortDir = 'asc' | 'desc';
 type PeopleSortKey = 'personName' | 'role' | 'totalHours' | string;
 
 function fmtHours(hours: number): string {
   return hours.toLocaleString();
-}
-
-function getWeekdayDayCellClass(
-  isoDate: string,
-  hours: number,
-): 'dayHigh' | 'dayMedium' | 'dayLow' | null {
-  const date = new Date(`${isoDate}T00:00:00`);
-  const dayOfWeek = date.getDay();
-
-  // Only apply day-level colour coding to Monday-Friday.
-  if (dayOfWeek < 1 || dayOfWeek > 5) {
-    return null;
-  }
-
-  if (hours >= 6.5) {
-    return 'dayHigh';
-  }
-
-  if (hours >= 5) {
-    return 'dayMedium';
-  }
-
-  return 'dayLow';
 }
 
 function toggleSort<K extends string>(
@@ -68,7 +46,7 @@ function getSortIndicator(isActive: boolean, dir: SortDir): string {
   return dir === 'asc' ? '↑' : '↓';
 }
 
-function ActualsPeopleByDay() {
+function ActualsPeopleByWeek() {
   const [searchParams, setSearchParams] = useSearchParams();
   const requestedWeekStart = searchParams.get('weekStart');
   const [peopleSort, setPeopleSort] = useState<{ key: PeopleSortKey; dir: SortDir }>({
@@ -76,8 +54,8 @@ function ActualsPeopleByDay() {
     dir: 'asc',
   });
 
-  const { isLoading, error, weekStarts, selectedWeekStart, weekDates, personWeekRows } =
-    useActualsPeopleByDayData(requestedWeekStart);
+  const { isLoading, error, weekStarts, selectedWeekStart, visibleWeekStarts, personWindowRows } =
+    useActualsPeopleByWeekData(requestedWeekStart);
 
   useEffect(() => {
     if (!selectedWeekStart) {
@@ -103,8 +81,8 @@ function ActualsPeopleByDay() {
       ? weekStarts[selectedWeekIndex + 1]
       : null;
 
-  const sortedPersonWeekRows = useMemo(() => {
-    return [...personWeekRows].sort((a, b) => {
+  const sortedPersonWindowRows = useMemo(() => {
+    return [...personWindowRows].sort((a, b) => {
       if (peopleSort.key === 'personName') {
         const value = a.personName.localeCompare(b.personName);
         return peopleSort.dir === 'asc' ? value : -value;
@@ -120,20 +98,25 @@ function ActualsPeopleByDay() {
         return peopleSort.dir === 'asc' ? value : -value;
       }
 
-      const dateKey = peopleSort.key;
-      const value = (a.dailyHours[dateKey] ?? 0) - (b.dailyHours[dateKey] ?? 0);
+      const weekKey = peopleSort.key;
+      const value = (a.weeklyHours[weekKey] ?? 0) - (b.weeklyHours[weekKey] ?? 0);
       return peopleSort.dir === 'asc' ? value : -value;
     });
-  }, [peopleSort, personWeekRows]);
+  }, [peopleSort, personWindowRows]);
 
   const goToWeek = (weekStart: string) => {
     setSearchParams({ weekStart });
   };
 
+  const windowStartLabel = visibleWeekStarts[0] ? formatWeekLabel(visibleWeekStarts[0]) : null;
+  const windowEndLabel = visibleWeekStarts[visibleWeekStarts.length - 1]
+    ? formatWeekLabel(visibleWeekStarts[visibleWeekStarts.length - 1])
+    : null;
+
   if (isLoading) {
     return (
       <div className={styles.page}>
-        <h2 className={styles.heading}>People by Day</h2>
+        <h2 className={styles.heading}>People by Week</h2>
         <p className={styles.status}>Loading data…</p>
       </div>
     );
@@ -142,7 +125,7 @@ function ActualsPeopleByDay() {
   if (error) {
     return (
       <div className={styles.page}>
-        <h2 className={styles.heading}>People by Day</h2>
+        <h2 className={styles.heading}>People by Week</h2>
         <p className={styles.statusError}>Error: {error}</p>
       </div>
     );
@@ -150,9 +133,9 @@ function ActualsPeopleByDay() {
 
   return (
     <div className={styles.page}>
-      <h2 className={styles.heading}>People by Day</h2>
+      <h2 className={styles.heading}>People by Week</h2>
       <p className={styles.subheading}>
-        Review individual hours per day for a selected week and move week-by-week.
+        Review individual weekly totals across a rolling 4-week window and move one week at a time.
       </p>
 
       <Card title="Week Navigation">
@@ -168,7 +151,9 @@ function ActualsPeopleByDay() {
           </button>
 
           <div className={styles.currentWeek}>
-            {selectedWeekStart ? `Week of ${formatIsoDate(selectedWeekStart)}` : 'No week selected'}
+            {windowStartLabel && windowEndLabel
+              ? `Weeks ${windowStartLabel} to ${windowEndLabel}`
+              : 'No weeks selected'}
           </div>
 
           <button
@@ -183,14 +168,12 @@ function ActualsPeopleByDay() {
         </div>
       </Card>
 
-      <Card title="People by Day (Selected Week)">
+      <Card title="People by Week (4-Week Window)">
         <p className={styles.legend}>
           Weekly total cell colours: <span className={styles.highLabel}>over 36 = green</span>,{' '}
           <span className={styles.mediumLabel}>23-36 = orange</span>,{' '}
-          <span className={styles.lowLabel}>under 23 = red</span>. Day cells (Mon-Fri):{' '}
-          <span className={styles.highLabel}>6.5+ = green</span>,{' '}
-          <span className={styles.mediumLabel}>5-6.4 = orange</span>,{' '}
-          <span className={styles.lowLabel}>under 5 = red</span>.
+          <span className={styles.lowLabel}>under 23 = red</span>. 4-week total uses the same
+          colours based on average weekly hours.
         </p>
 
         <div className={styles.tableWrap}>
@@ -221,16 +204,19 @@ function ActualsPeopleByDay() {
                     </span>
                   </button>
                 </th>
-                {weekDates.map((date) => (
-                  <th key={date} aria-sort={getAriaSort(peopleSort.key === date, peopleSort.dir)}>
+                {visibleWeekStarts.map((weekStart) => (
+                  <th
+                    key={weekStart}
+                    aria-sort={getAriaSort(peopleSort.key === weekStart, peopleSort.dir)}
+                  >
                     <button
                       type="button"
                       className={styles.sortButton}
-                      onClick={() => setPeopleSort((prev) => toggleSort(prev, date))}
+                      onClick={() => setPeopleSort((prev) => toggleSort(prev, weekStart))}
                     >
-                      {formatIsoDate(date)}{' '}
+                      Week of {formatWeekLabel(weekStart)}{' '}
                       <span className={styles.sortIndicator}>
-                        {getSortIndicator(peopleSort.key === date, peopleSort.dir)}
+                        {getSortIndicator(peopleSort.key === weekStart, peopleSort.dir)}
                       </span>
                     </button>
                   </th>
@@ -241,7 +227,7 @@ function ActualsPeopleByDay() {
                     className={styles.sortButton}
                     onClick={() => setPeopleSort((prev) => toggleSort(prev, 'totalHours'))}
                   >
-                    Week Total{' '}
+                    4-Week Total{' '}
                     <span className={styles.sortIndicator}>
                       {getSortIndicator(peopleSort.key === 'totalHours', peopleSort.dir)}
                     </span>
@@ -250,25 +236,25 @@ function ActualsPeopleByDay() {
               </tr>
             </thead>
             <tbody>
-              {sortedPersonWeekRows.map((row) => {
-                const status = getWeekStatusClass(row.totalHours);
+              {sortedPersonWindowRows.map((row) => {
+                const totalStatus = getWindowTotalStatusClass(
+                  row.totalHours,
+                  visibleWeekStarts.length,
+                );
                 return (
                   <tr key={row.personId}>
                     <td>{row.personName}</td>
                     <td>{row.role || '—'}</td>
-                    {weekDates.map((date) => {
-                      const dayHours = row.dailyHours[date] ?? 0;
-                      const dayStatus = getWeekdayDayCellClass(date, dayHours);
+                    {visibleWeekStarts.map((weekStart) => {
+                      const weeklyHours = row.weeklyHours[weekStart] ?? 0;
+                      const weeklyStatus = getWeekStatusClass(weeklyHours);
                       return (
-                        <td
-                          key={`${row.personId}-${date}`}
-                          className={dayStatus ? styles[dayStatus] : ''}
-                        >
-                          {fmtHours(dayHours)}
+                        <td key={`${row.personId}-${weekStart}`} className={styles[weeklyStatus]}>
+                          {fmtHours(weeklyHours)}
                         </td>
                       );
                     })}
-                    <td className={styles[status]}>{fmtHours(row.totalHours)}</td>
+                    <td className={styles[totalStatus]}>{fmtHours(row.totalHours)}</td>
                   </tr>
                 );
               })}
@@ -280,4 +266,4 @@ function ActualsPeopleByDay() {
   );
 }
 
-export default ActualsPeopleByDay;
+export default ActualsPeopleByWeek;
