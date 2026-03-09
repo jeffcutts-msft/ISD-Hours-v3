@@ -16,6 +16,10 @@ function fmtHours(hours: number): string {
   return hours.toLocaleString();
 }
 
+function fmtHoursPair(actualHours: number, forecastHours: number): string {
+  return `${fmtHours(actualHours)} (${fmtHours(forecastHours)})`;
+}
+
 function toggleSort<K extends string>(
   current: { key: K; dir: SortDir },
   key: K,
@@ -247,14 +251,17 @@ function ActualsPeopleByWeek() {
                     <td>{row.role || '—'}</td>
                     {visibleWeekStarts.map((weekStart) => {
                       const weeklyHours = row.weeklyHours[weekStart] ?? 0;
+                      const weeklyForecastHours = row.weeklyForecastHours[weekStart] ?? 0;
                       const weeklyStatus = getWeekStatusClass(weeklyHours);
                       return (
                         <td key={`${row.personId}-${weekStart}`} className={styles[weeklyStatus]}>
-                          {fmtHours(weeklyHours)}
+                          {fmtHoursPair(weeklyHours, weeklyForecastHours)}
                         </td>
                       );
                     })}
-                    <td className={styles[totalStatus]}>{fmtHours(row.totalHours)}</td>
+                    <td className={styles[totalStatus]}>
+                      {fmtHoursPair(row.totalHours, row.totalForecastHours)}
+                    </td>
                   </tr>
                 );
               })}

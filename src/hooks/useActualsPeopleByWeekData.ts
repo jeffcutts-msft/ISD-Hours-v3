@@ -9,7 +9,9 @@ export interface PersonWindowRow {
   personName: string;
   role: string;
   weeklyHours: Record<string, number>;
+  weeklyForecastHours: Record<string, number>;
   totalHours: number;
+  totalForecastHours: number;
 }
 
 export interface ActualsPeopleByWeekData {
@@ -103,8 +105,7 @@ export function useActualsPeopleByWeekData(
     getDatasetRows()
       .then((allRows) => {
         if (!cancelled) {
-          const actualRows = allRows.filter((row) => row.workType === 'Actual');
-          setRows(actualRows);
+          setRows(allRows);
         }
       })
       .catch((err: unknown) => {
@@ -172,7 +173,9 @@ export function useActualsPeopleByWeekData(
         personName: string;
         role: string;
         weeklyHours: Record<string, number>;
+        weeklyForecastHours: Record<string, number>;
         totalHours: number;
+        totalForecastHours: number;
       }
     >();
 
@@ -187,11 +190,21 @@ export function useActualsPeopleByWeekData(
         personName: row.personName,
         role: row.role,
         weeklyHours: {},
+        weeklyForecastHours: {},
         totalHours: 0,
+        totalForecastHours: 0,
       };
 
-      current.weeklyHours[weekStart] = roundOne((current.weeklyHours[weekStart] ?? 0) + row.hours);
-      current.totalHours = roundOne(current.totalHours + row.hours);
+      if (row.workType === 'Actual') {
+        current.weeklyHours[weekStart] = roundOne((current.weeklyHours[weekStart] ?? 0) + row.hours);
+        current.totalHours = roundOne(current.totalHours + row.hours);
+      } else if (row.workType === 'Forecast') {
+        current.weeklyForecastHours[weekStart] = roundOne(
+          (current.weeklyForecastHours[weekStart] ?? 0) + row.hours,
+        );
+        current.totalForecastHours = roundOne(current.totalForecastHours + row.hours);
+      }
+
       personMap.set(row.personId, current);
     }
 

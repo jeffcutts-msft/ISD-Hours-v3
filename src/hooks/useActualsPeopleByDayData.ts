@@ -8,7 +8,9 @@ export interface PersonWeekRow {
   personName: string;
   role: string;
   dailyHours: Record<string, number>;
+  dailyForecastHours: Record<string, number>;
   totalHours: number;
+  totalForecastHours: number;
 }
 
 export interface ActualsPeopleByDayData {
@@ -101,8 +103,7 @@ export function useActualsPeopleByDayData(targetWeekStart: string | null): Actua
     getDatasetRows()
       .then((allRows) => {
         if (!cancelled) {
-          const actualRows = allRows.filter((row) => row.workType === 'Actual');
-          setRows(actualRows);
+          setRows(allRows);
         }
       })
       .catch((err: unknown) => {
@@ -174,7 +175,9 @@ export function useActualsPeopleByDayData(targetWeekStart: string | null): Actua
         personName: string;
         role: string;
         dailyHours: Record<string, number>;
+        dailyForecastHours: Record<string, number>;
         totalHours: number;
+        totalForecastHours: number;
       }
     >();
 
@@ -188,11 +191,21 @@ export function useActualsPeopleByDayData(targetWeekStart: string | null): Actua
         personName: row.personName,
         role: row.role,
         dailyHours: {},
+        dailyForecastHours: {},
         totalHours: 0,
+        totalForecastHours: 0,
       };
 
-      current.dailyHours[row.date] = roundOne((current.dailyHours[row.date] ?? 0) + row.hours);
-      current.totalHours = roundOne(current.totalHours + row.hours);
+      if (row.workType === 'Actual') {
+        current.dailyHours[row.date] = roundOne((current.dailyHours[row.date] ?? 0) + row.hours);
+        current.totalHours = roundOne(current.totalHours + row.hours);
+      } else if (row.workType === 'Forecast') {
+        current.dailyForecastHours[row.date] = roundOne(
+          (current.dailyForecastHours[row.date] ?? 0) + row.hours,
+        );
+        current.totalForecastHours = roundOne(current.totalForecastHours + row.hours);
+      }
+
       personMap.set(row.personId, current);
     }
 

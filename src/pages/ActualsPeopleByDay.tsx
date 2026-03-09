@@ -15,6 +15,10 @@ function fmtHours(hours: number): string {
   return hours.toLocaleString();
 }
 
+function fmtHoursPair(actualHours: number, forecastHours: number): string {
+  return `${fmtHours(actualHours)} (${fmtHours(forecastHours)})`;
+}
+
 function getWeekdayDayCellClass(
   isoDate: string,
   hours: number,
@@ -258,17 +262,20 @@ function ActualsPeopleByDay() {
                     <td>{row.role || '—'}</td>
                     {weekDates.map((date) => {
                       const dayHours = row.dailyHours[date] ?? 0;
+                      const dayForecastHours = row.dailyForecastHours[date] ?? 0;
                       const dayStatus = getWeekdayDayCellClass(date, dayHours);
                       return (
                         <td
                           key={`${row.personId}-${date}`}
                           className={dayStatus ? styles[dayStatus] : ''}
                         >
-                          {fmtHours(dayHours)}
+                          {fmtHoursPair(dayHours, dayForecastHours)}
                         </td>
                       );
                     })}
-                    <td className={styles[status]}>{fmtHours(row.totalHours)}</td>
+                    <td className={styles[status]}>
+                      {fmtHoursPair(row.totalHours, row.totalForecastHours)}
+                    </td>
                   </tr>
                 );
               })}
