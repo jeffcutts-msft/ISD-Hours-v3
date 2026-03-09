@@ -1,7 +1,6 @@
 import { Routes, Route } from 'react-router-dom';
 import Shell from '@/components/layout/Shell';
 import Dashboard from '@/pages/Dashboard';
-import HoursLog from '@/pages/HoursLog';
 import Reports from '@/pages/Reports';
 import Actuals from '@/pages/Actuals';
 import ActualsVsForecast from '@/pages/ActualsVsForecast';
@@ -13,7 +12,6 @@ function App() {
     <Shell>
       <Routes>
         <Route path="/" element={<Dashboard />} />
-        <Route path="/hours" element={<HoursLog />} />
         <Route path="/reports" element={<Reports />} />
         <Route path="/actuals" element={<Actuals />} />
         <Route path="/actuals-vs-forecast" element={<ActualsVsForecast />} />
