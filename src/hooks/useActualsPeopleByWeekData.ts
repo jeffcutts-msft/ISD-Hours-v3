@@ -196,7 +196,9 @@ export function useActualsPeopleByWeekData(
       };
 
       if (row.workType === 'Actual') {
-        current.weeklyHours[weekStart] = roundOne((current.weeklyHours[weekStart] ?? 0) + row.hours);
+        current.weeklyHours[weekStart] = roundOne(
+          (current.weeklyHours[weekStart] ?? 0) + row.hours,
+        );
         current.totalHours = roundOne(current.totalHours + row.hours);
       } else if (row.workType === 'Forecast') {
         current.weeklyForecastHours[weekStart] = roundOne(
