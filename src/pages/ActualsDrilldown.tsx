@@ -1,11 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import Card from '@/components/ui/Card';
 import StatCard from '@/components/ui/StatCard';
-import {
-  useActualsDrilldownData,
-  getWeekStatusClass,
-  formatIsoDate,
-} from '@/hooks/useActualsDrilldownData';
+import { useActualsDrilldownData, formatIsoDate } from '@/hooks/useActualsDrilldownData';
 import styles from './ActualsDrilldown.module.css';
 
 function fmtHours(hours: number): string {
@@ -16,9 +13,11 @@ type SortDir = 'asc' | 'desc';
 type MonthSortKey = 'label' | 'totalHours' | 'weekCount' | 'peopleCount';
 type WeekSortKey = 'weekStart' | 'totalHours' | 'dayCount' | 'peopleCount';
 type DaySortKey = 'date' | 'totalHours' | 'peopleCount';
-type PeopleSortKey = 'personName' | 'role' | 'totalHours' | string;
 
-function toggleSort<K extends string>(current: { key: K; dir: SortDir }, key: K): { key: K; dir: SortDir } {
+function toggleSort<K extends string>(
+  current: { key: K; dir: SortDir },
+  key: K,
+): { key: K; dir: SortDir } {
   if (current.key === key) {
     return {
       key,
@@ -60,20 +59,8 @@ function ActualsDrilldown() {
     key: 'date',
     dir: 'asc',
   });
-  const [peopleSort, setPeopleSort] = useState<{ key: PeopleSortKey; dir: SortDir }>({
-    key: 'personName',
-    dir: 'asc',
-  });
-
-  const {
-    isLoading,
-    error,
-    monthSummaries,
-    weekSummaries,
-    daySummaries,
-    weekDates,
-    personWeekRows,
-  } = useActualsDrilldownData(selectedMonthId, selectedWeekStart);
+  const { isLoading, error, monthSummaries, weekSummaries, daySummaries, personWeekRows } =
+    useActualsDrilldownData(selectedMonthId, selectedWeekStart);
 
   useEffect(() => {
     if (!selectedMonthId && monthSummaries.length > 0) {
@@ -139,29 +126,6 @@ function ActualsDrilldown() {
     });
   }, [daySort, daySummaries]);
 
-  const sortedPersonWeekRows = useMemo(() => {
-    return [...personWeekRows].sort((a, b) => {
-      if (peopleSort.key === 'personName') {
-        const value = a.personName.localeCompare(b.personName);
-        return peopleSort.dir === 'asc' ? value : -value;
-      }
-
-      if (peopleSort.key === 'role') {
-        const value = a.role.localeCompare(b.role);
-        return peopleSort.dir === 'asc' ? value : -value;
-      }
-
-      if (peopleSort.key === 'totalHours') {
-        const value = a.totalHours - b.totalHours;
-        return peopleSort.dir === 'asc' ? value : -value;
-      }
-
-      const dateKey = peopleSort.key;
-      const value = (a.dailyHours[dateKey] ?? 0) - (b.dailyHours[dateKey] ?? 0);
-      return peopleSort.dir === 'asc' ? value : -value;
-    });
-  }, [peopleSort, personWeekRows]);
-
   if (isLoading) {
     return (
       <div className={styles.page}>
@@ -184,7 +148,8 @@ function ActualsDrilldown() {
     <div className={styles.page}>
       <h2 className={styles.heading}>Actuals Drilldown</h2>
       <p className={styles.subheading}>
-        Drill from month summary to week summary to day summary, then view every person and each day for the selected week.
+        Drill from month summary to week summary to day summary, then view every person and each day
+        for the selected week.
       </p>
 
       <section className={styles.statsGrid} aria-label="Drilldown summary statistics">
@@ -205,7 +170,10 @@ function ActualsDrilldown() {
                     className={styles.sortButton}
                     onClick={() => setMonthSort((prev) => toggleSort(prev, 'label'))}
                   >
-                    Month <span className={styles.sortIndicator}>{getSortIndicator(monthSort.key === 'label', monthSort.dir)}</span>
+                    Month{' '}
+                    <span className={styles.sortIndicator}>
+                      {getSortIndicator(monthSort.key === 'label', monthSort.dir)}
+                    </span>
                   </button>
                 </th>
                 <th aria-sort={getAriaSort(monthSort.key === 'totalHours', monthSort.dir)}>
@@ -215,7 +183,9 @@ function ActualsDrilldown() {
                     onClick={() => setMonthSort((prev) => toggleSort(prev, 'totalHours'))}
                   >
                     Total Hours{' '}
-                    <span className={styles.sortIndicator}>{getSortIndicator(monthSort.key === 'totalHours', monthSort.dir)}</span>
+                    <span className={styles.sortIndicator}>
+                      {getSortIndicator(monthSort.key === 'totalHours', monthSort.dir)}
+                    </span>
                   </button>
                 </th>
                 <th aria-sort={getAriaSort(monthSort.key === 'weekCount', monthSort.dir)}>
@@ -224,7 +194,10 @@ function ActualsDrilldown() {
                     className={styles.sortButton}
                     onClick={() => setMonthSort((prev) => toggleSort(prev, 'weekCount'))}
                   >
-                    Weeks <span className={styles.sortIndicator}>{getSortIndicator(monthSort.key === 'weekCount', monthSort.dir)}</span>
+                    Weeks{' '}
+                    <span className={styles.sortIndicator}>
+                      {getSortIndicator(monthSort.key === 'weekCount', monthSort.dir)}
+                    </span>
                   </button>
                 </th>
                 <th aria-sort={getAriaSort(monthSort.key === 'peopleCount', monthSort.dir)}>
@@ -233,7 +206,10 @@ function ActualsDrilldown() {
                     className={styles.sortButton}
                     onClick={() => setMonthSort((prev) => toggleSort(prev, 'peopleCount'))}
                   >
-                    People <span className={styles.sortIndicator}>{getSortIndicator(monthSort.key === 'peopleCount', monthSort.dir)}</span>
+                    People{' '}
+                    <span className={styles.sortIndicator}>
+                      {getSortIndicator(monthSort.key === 'peopleCount', monthSort.dir)}
+                    </span>
                   </button>
                 </th>
                 <th>Drilldown</th>
@@ -278,7 +254,9 @@ function ActualsDrilldown() {
                     onClick={() => setWeekSort((prev) => toggleSort(prev, 'weekStart'))}
                   >
                     Week Start{' '}
-                    <span className={styles.sortIndicator}>{getSortIndicator(weekSort.key === 'weekStart', weekSort.dir)}</span>
+                    <span className={styles.sortIndicator}>
+                      {getSortIndicator(weekSort.key === 'weekStart', weekSort.dir)}
+                    </span>
                   </button>
                 </th>
                 <th aria-sort={getAriaSort(weekSort.key === 'totalHours', weekSort.dir)}>
@@ -288,7 +266,9 @@ function ActualsDrilldown() {
                     onClick={() => setWeekSort((prev) => toggleSort(prev, 'totalHours'))}
                   >
                     Total Hours{' '}
-                    <span className={styles.sortIndicator}>{getSortIndicator(weekSort.key === 'totalHours', weekSort.dir)}</span>
+                    <span className={styles.sortIndicator}>
+                      {getSortIndicator(weekSort.key === 'totalHours', weekSort.dir)}
+                    </span>
                   </button>
                 </th>
                 <th aria-sort={getAriaSort(weekSort.key === 'dayCount', weekSort.dir)}>
@@ -297,7 +277,10 @@ function ActualsDrilldown() {
                     className={styles.sortButton}
                     onClick={() => setWeekSort((prev) => toggleSort(prev, 'dayCount'))}
                   >
-                    Days <span className={styles.sortIndicator}>{getSortIndicator(weekSort.key === 'dayCount', weekSort.dir)}</span>
+                    Days{' '}
+                    <span className={styles.sortIndicator}>
+                      {getSortIndicator(weekSort.key === 'dayCount', weekSort.dir)}
+                    </span>
                   </button>
                 </th>
                 <th aria-sort={getAriaSort(weekSort.key === 'peopleCount', weekSort.dir)}>
@@ -306,7 +289,10 @@ function ActualsDrilldown() {
                     className={styles.sortButton}
                     onClick={() => setWeekSort((prev) => toggleSort(prev, 'peopleCount'))}
                   >
-                    People <span className={styles.sortIndicator}>{getSortIndicator(weekSort.key === 'peopleCount', weekSort.dir)}</span>
+                    People{' '}
+                    <span className={styles.sortIndicator}>
+                      {getSortIndicator(weekSort.key === 'peopleCount', weekSort.dir)}
+                    </span>
                   </button>
                 </th>
                 <th>Drilldown</th>
@@ -339,7 +325,9 @@ function ActualsDrilldown() {
         </div>
       </Card>
 
-      <Card title={`3) Day Summary — ${selectedWeekStart ? `Week of ${formatIsoDate(selectedWeekStart)}` : 'No week selected'}`}>
+      <Card
+        title={`3) Day Summary — ${selectedWeekStart ? `Week of ${formatIsoDate(selectedWeekStart)}` : 'No week selected'}`}
+      >
         <div className={styles.tableWrap}>
           <table className={styles.table}>
             <thead>
@@ -350,7 +338,10 @@ function ActualsDrilldown() {
                     className={styles.sortButton}
                     onClick={() => setDaySort((prev) => toggleSort(prev, 'date'))}
                   >
-                    Date <span className={styles.sortIndicator}>{getSortIndicator(daySort.key === 'date', daySort.dir)}</span>
+                    Date{' '}
+                    <span className={styles.sortIndicator}>
+                      {getSortIndicator(daySort.key === 'date', daySort.dir)}
+                    </span>
                   </button>
                 </th>
                 <th aria-sort={getAriaSort(daySort.key === 'totalHours', daySort.dir)}>
@@ -360,7 +351,9 @@ function ActualsDrilldown() {
                     onClick={() => setDaySort((prev) => toggleSort(prev, 'totalHours'))}
                   >
                     Total Hours{' '}
-                    <span className={styles.sortIndicator}>{getSortIndicator(daySort.key === 'totalHours', daySort.dir)}</span>
+                    <span className={styles.sortIndicator}>
+                      {getSortIndicator(daySort.key === 'totalHours', daySort.dir)}
+                    </span>
                   </button>
                 </th>
                 <th aria-sort={getAriaSort(daySort.key === 'peopleCount', daySort.dir)}>
@@ -369,7 +362,10 @@ function ActualsDrilldown() {
                     className={styles.sortButton}
                     onClick={() => setDaySort((prev) => toggleSort(prev, 'peopleCount'))}
                   >
-                    People <span className={styles.sortIndicator}>{getSortIndicator(daySort.key === 'peopleCount', daySort.dir)}</span>
+                    People{' '}
+                    <span className={styles.sortIndicator}>
+                      {getSortIndicator(daySort.key === 'peopleCount', daySort.dir)}
+                    </span>
                   </button>
                 </th>
               </tr>
@@ -387,77 +383,20 @@ function ActualsDrilldown() {
         </div>
       </Card>
 
-      <Card title="4) People by Day (Selected Week)">
+      <Card title="4) People by Day">
         <p className={styles.legend}>
-          Weekly total cell colours: <span className={styles.highLabel}>over 36 = green</span>,{' '}
-          <span className={styles.mediumLabel}>24–26 = orange</span>,{' '}
-          <span className={styles.lowLabel}>under 23 = red</span>.
+          This view now lives on its own page with week-by-week navigation.
         </p>
-
-        <div className={styles.tableWrap}>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th aria-sort={getAriaSort(peopleSort.key === 'personName', peopleSort.dir)}>
-                  <button
-                    type="button"
-                    className={styles.sortButton}
-                    onClick={() => setPeopleSort((prev) => toggleSort(prev, 'personName'))}
-                  >
-                    Person{' '}
-                    <span className={styles.sortIndicator}>{getSortIndicator(peopleSort.key === 'personName', peopleSort.dir)}</span>
-                  </button>
-                </th>
-                <th aria-sort={getAriaSort(peopleSort.key === 'role', peopleSort.dir)}>
-                  <button
-                    type="button"
-                    className={styles.sortButton}
-                    onClick={() => setPeopleSort((prev) => toggleSort(prev, 'role'))}
-                  >
-                    Role <span className={styles.sortIndicator}>{getSortIndicator(peopleSort.key === 'role', peopleSort.dir)}</span>
-                  </button>
-                </th>
-                {weekDates.map((date) => (
-                  <th key={date} aria-sort={getAriaSort(peopleSort.key === date, peopleSort.dir)}>
-                    <button
-                      type="button"
-                      className={styles.sortButton}
-                      onClick={() => setPeopleSort((prev) => toggleSort(prev, date))}
-                    >
-                      {formatIsoDate(date)}{' '}
-                      <span className={styles.sortIndicator}>{getSortIndicator(peopleSort.key === date, peopleSort.dir)}</span>
-                    </button>
-                  </th>
-                ))}
-                <th aria-sort={getAriaSort(peopleSort.key === 'totalHours', peopleSort.dir)}>
-                  <button
-                    type="button"
-                    className={styles.sortButton}
-                    onClick={() => setPeopleSort((prev) => toggleSort(prev, 'totalHours'))}
-                  >
-                    Week Total{' '}
-                    <span className={styles.sortIndicator}>{getSortIndicator(peopleSort.key === 'totalHours', peopleSort.dir)}</span>
-                  </button>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {sortedPersonWeekRows.map((row) => {
-                const status = getWeekStatusClass(row.totalHours);
-                return (
-                  <tr key={row.personId}>
-                    <td>{row.personName}</td>
-                    <td>{row.role || '—'}</td>
-                    {weekDates.map((date) => (
-                      <td key={`${row.personId}-${date}`}>{fmtHours(row.dailyHours[date] ?? 0)}</td>
-                    ))}
-                    <td className={status === 'normal' ? '' : styles[status]}>{fmtHours(row.totalHours)}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        <Link
+          to={
+            selectedWeekStart
+              ? `/actuals-people-by-day?weekStart=${selectedWeekStart}`
+              : '/actuals-people-by-day'
+          }
+          className={styles.linkButton}
+        >
+          Open People by Day
+        </Link>
       </Card>
     </div>
   );

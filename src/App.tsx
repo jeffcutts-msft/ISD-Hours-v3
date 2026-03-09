@@ -5,6 +5,7 @@ import Reports from '@/pages/Reports';
 import Actuals from '@/pages/Actuals';
 import ActualsVsForecast from '@/pages/ActualsVsForecast';
 import ActualsDrilldown from '@/pages/ActualsDrilldown';
+import ActualsPeopleByDay from '@/pages/ActualsPeopleByDay';
 import NotFound from '@/pages/NotFound';
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
         <Route path="/actuals" element={<Actuals />} />
         <Route path="/actuals-vs-forecast" element={<ActualsVsForecast />} />
         <Route path="/actuals-drilldown" element={<ActualsDrilldown />} />
+        <Route path="/actuals-people-by-day" element={<ActualsPeopleByDay />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Shell>
